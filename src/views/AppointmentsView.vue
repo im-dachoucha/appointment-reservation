@@ -27,7 +27,10 @@
             >
               Look up for appointments
             </button>
-            <div v-if="date" class="mt-3 flex justify-around flex-wrap">
+            <div
+              v-if="showAppointments"
+              class="mt-3 flex justify-around flex-wrap"
+            >
               <div
                 v-for="appointment in availableAppointments"
                 class="card w-48 md-base-100 shadow-xl"
@@ -93,6 +96,7 @@ export default {
       date: "",
       appointments: [],
       reservedAppointments: [],
+      showAppointments: false,
     }
   },
   methods: {
@@ -106,6 +110,7 @@ export default {
         .then((response) => response.json())
         .then((data) => {
           this.appointments = data.data
+          this.showAppointments = true
         })
         .catch((error) => {
           console.log(error)
@@ -119,12 +124,15 @@ export default {
       return `${y}-${m}-${d}`
     },
     reserve(slot) {
-      this.$store.dispatch("reserve", {
-        timeslot: slot,
-        appdate: this.date,
-      })
-      this.date = ""
-      this.getReservedAppointments()
+      this.$store
+        .dispatch("reserve", {
+          timeslot: slot,
+          appdate: this.date,
+        })
+        .then(() => {
+          this.showAppointments = false
+          this.getReservedAppointments()
+        })
     },
     getReservedAppointments() {
       fetch(
